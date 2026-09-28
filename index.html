@@ -1,0 +1,288 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Nộp công bố khoa học</title>
+  <meta name="description" content="Form thu thập thông tin công bố khoa học của nhân viên bệnh viện – phục vụ thống kê nội bộ và xét thưởng.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<div class="wrap">
+
+  <header class="hero">
+    <div class="hero-kicker" id="heroUnit">Công bố khoa học</div>
+    <h1 class="hero-title" id="heroTitle">CUNG CẤP THÔNG TIN CÔNG BỐ KHOA HỌC</h1>
+    <div class="hero-meta" id="heroMeta"></div>
+  </header>
+
+  <!-- Trạng thái đang tải / đóng / lỗi cấu hình -->
+  <section class="card state-card" id="stateCard">
+    <div class="spinner" aria-hidden="true"></div>
+    <p id="stateText">Đang tải biểu mẫu…</p>
+  </section>
+
+  <form id="pubForm" class="hidden" novalidate autocomplete="on">
+    <!-- honeypot chống bot: người thật không thấy trường này -->
+    <div class="hp" aria-hidden="true">
+      <label>Website <input type="text" name="website" tabindex="-1" autocomplete="off"></label>
+    </div>
+
+    <!-- 1. NGƯỜI NỘP -->
+    <section class="card">
+      <h2 class="card-title"><span class="step">1</span>Thông tin người nộp</h2>
+      <div class="grid-2">
+        <div class="field">
+          <label for="email">Email <span class="req">*</span></label>
+          <input type="email" id="email" name="email" required autocomplete="email" placeholder="ten@bvtn.edu.vn">
+        </div>
+        <div class="field">
+          <label for="hoTen">Họ và tên <span class="req">*</span></label>
+          <input type="text" id="hoTen" name="hoTen" required autocomplete="name">
+        </div>
+        <div class="field">
+          <label for="khoaNguoiNop">Khoa/Phòng <span class="req">*</span></label>
+          <select id="khoaNguoiNop" name="khoaNguoiNop" required class="khoa-select"></select>
+        </div>
+        <div class="field">
+          <label for="sdt">Số điện thoại / số nội bộ</label>
+          <input type="tel" id="sdt" name="sdt" autocomplete="tel">
+        </div>
+      </div>
+      <div class="field">
+        <span class="label">Vai trò của bạn trong bài báo <span class="req">*</span></span>
+        <div class="pills" data-name="vaiTro">
+          <label class="pill"><input type="radio" name="vaiTro" value="Tác giả đứng đầu" required>Tác giả đứng đầu</label>
+          <label class="pill"><input type="radio" name="vaiTro" value="Tác giả liên hệ">Tác giả liên hệ</label>
+          <label class="pill"><input type="radio" name="vaiTro" value="Tác giả đứng đầu &amp; liên hệ">Đứng đầu &amp; liên hệ</label>
+          <label class="pill"><input type="radio" name="vaiTro" value="Đồng tác giả">Đồng tác giả</label>
+          <label class="pill"><input type="radio" name="vaiTro" value="Nộp hộ">Nộp hộ</label>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. BÀI BÁO -->
+    <section class="card">
+      <h2 class="card-title"><span class="step">2</span>Thông tin bài báo</h2>
+      <div class="field">
+        <label for="doi">DOI <span class="req">*</span></label>
+        <div class="input-btn">
+          <input type="text" id="doi" name="doi" placeholder="10.1038/s41598-022-22546-w hoặc https://doi.org/...">
+          <button type="button" class="btn-ghost" id="btnDoi">Tự điền từ DOI</button>
+        </div>
+        <p class="hint">Nhập DOI rồi bấm <b>Tự điền từ DOI</b>: tên bài, tạp chí, ISSN, ngày xuất bản và danh sách tác giả sẽ được điền sẵn. Hãy kiểm tra lại trước khi nộp.</p>
+        <div class="notice hidden" id="doiNotice"></div>
+      </div>
+      <div class="field">
+        <label for="link">Link bài báo <span class="muted">(bắt buộc nếu bài chưa có DOI)</span></label>
+        <input type="url" id="link" name="link" placeholder="https://...">
+      </div>
+      <div class="field">
+        <label for="tenBai">Tên bài báo <span class="req">*</span> <span class="muted">(ghi đúng ngôn ngữ gốc)</span></label>
+        <textarea id="tenBai" name="tenBai" rows="2" required></textarea>
+      </div>
+      <div class="grid-2">
+        <div class="field">
+          <label for="loaiBai">Loại bài <span class="req">*</span></label>
+          <select id="loaiBai" name="loaiBai" required>
+            <option value="">— Chọn —</option>
+            <option>Nghiên cứu gốc</option>
+            <option>Tổng quan</option>
+            <option>Tổng quan hệ thống / Phân tích gộp</option>
+            <option>Báo cáo ca lâm sàng</option>
+            <option>Thư / Bình luận</option>
+            <option>Tóm tắt hội nghị</option>
+            <option>Khác</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="tinhTrang">Tình trạng xuất bản <span class="req">*</span></label>
+          <select id="tinhTrang" name="tinhTrang" required>
+            <option value="">— Chọn —</option>
+            <option>Đã xuất bản chính thức</option>
+            <option>Đã online (chưa in)</option>
+            <option>Đã được chấp nhận</option>
+          </select>
+        </div>
+      </div>
+      <div class="grid-4">
+        <div class="field">
+          <label for="ngayXB">Ngày xuất bản <span class="req" id="ngayReq">*</span></label>
+          <input type="date" id="ngayXB" name="ngayXB">
+        </div>
+        <div class="field">
+          <label for="tap">Tập (Volume)</label>
+          <input type="text" id="tap" name="tap">
+        </div>
+        <div class="field">
+          <label for="so">Số (Issue)</label>
+          <input type="text" id="so" name="so">
+        </div>
+        <div class="field">
+          <label for="trang">Trang</label>
+          <input type="text" id="trang" name="trang" placeholder="VD: 112-120">
+        </div>
+      </div>
+      <p class="hint" id="fromDateHint"></p>
+    </section>
+
+    <!-- 3. TÁC GIẢ -->
+    <section class="card">
+      <h2 class="card-title"><span class="step">3</span>Tác giả</h2>
+      <div class="field">
+        <label for="dsTacGia">Danh sách toàn bộ tác giả <span class="req">*</span></label>
+        <textarea id="dsTacGia" name="dsTacGia" rows="5" required placeholder="Mỗi dòng một tác giả, đúng thứ tự trong bài báo"></textarea>
+      </div>
+      <div class="grid-2">
+        <div class="field">
+          <label for="tgDauTien">Tác giả đứng đầu (first author) <span class="req">*</span></label>
+          <input type="text" id="tgDauTien" name="tgDauTien" required list="authorList">
+        </div>
+        <div class="field">
+          <label for="tgLienHe">Tác giả liên hệ (corresponding) <span class="req">*</span></label>
+          <input type="text" id="tgLienHe" name="tgLienHe" required list="authorList">
+        </div>
+      </div>
+
+      <div class="field">
+        <span class="label">Tác giả là nhân viên bệnh viện <span class="req">*</span></span>
+        <p class="hint">Liệt kê <b>tất cả</b> tác giả đang công tác tại bệnh viện kèm Khoa/Phòng. Đây là căn cứ để thống kê theo khoa và xét thưởng theo cá nhân.</p>
+        <div id="staffList" class="staff-list"></div>
+        <button type="button" class="btn-ghost" id="btnAddStaff">+ Thêm tác giả</button>
+      </div>
+
+      <div class="field">
+        <span class="label">Bài báo có ghi tên bệnh viện trong địa chỉ tác giả (affiliation) không? <span class="req">*</span></span>
+        <div class="pills">
+          <label class="pill yes"><input type="radio" name="affiliation" value="Có" required>Có</label>
+          <label class="pill no"><input type="radio" name="affiliation" value="Không">Không</label>
+        </div>
+      </div>
+      <div class="field">
+        <span class="label">Có hợp tác với đơn vị ngoài bệnh viện không? <span class="req">*</span></span>
+        <div class="pills">
+          <label class="pill"><input type="radio" name="hopTac" value="Không" required>Không</label>
+          <label class="pill"><input type="radio" name="hopTac" value="Trong nước">Trong nước</label>
+          <label class="pill"><input type="radio" name="hopTac" value="Quốc tế">Quốc tế</label>
+          <label class="pill"><input type="radio" name="hopTac" value="Trong nước và quốc tế">Cả hai</label>
+        </div>
+      </div>
+      <datalist id="authorList"></datalist>
+    </section>
+
+    <!-- 4. TẠP CHÍ -->
+    <section class="card">
+      <h2 class="card-title"><span class="step">4</span>Tạp chí</h2>
+      <div class="field">
+        <span class="label">Tạp chí trong nước hay quốc tế? <span class="req">*</span></span>
+        <div class="pills">
+          <label class="pill"><input type="radio" name="phamVi" value="Trong nước" required>Trong nước</label>
+          <label class="pill"><input type="radio" name="phamVi" value="Quốc tế">Quốc tế</label>
+        </div>
+      </div>
+      <div class="grid-2">
+        <div class="field">
+          <label for="tapChi">Tên tạp chí <span class="req">*</span></label>
+          <input type="text" id="tapChi" name="tapChi" required>
+        </div>
+        <div class="field">
+          <label for="issn">ISSN / eISSN</label>
+          <input type="text" id="issn" name="issn" placeholder="VD: 2045-2322">
+        </div>
+      </div>
+
+      <div id="blockQuocTe" class="sub-block hidden">
+        <div class="field">
+          <span class="label">Tạp chí thuộc cơ sở dữ liệu nào?</span>
+          <div class="pills">
+            <label class="pill"><input type="checkbox" name="chiMuc" value="Scopus">Scopus</label>
+            <label class="pill"><input type="checkbox" name="chiMuc" value="SCIE">SCIE</label>
+            <label class="pill"><input type="checkbox" name="chiMuc" value="SSCI">SSCI</label>
+            <label class="pill"><input type="checkbox" name="chiMuc" value="ESCI">ESCI</label>
+            <label class="pill"><input type="checkbox" name="chiMuc" value="PubMed/MEDLINE">PubMed/MEDLINE</label>
+            <label class="pill"><input type="checkbox" name="chiMuc" value="Khác">Khác</label>
+          </div>
+        </div>
+        <div class="field">
+          <span class="label">Xếp loại tạp chí (SJR) <span class="req">*</span></span>
+          <div class="pills">
+            <label class="pill"><input type="radio" name="sjr" value="Q1">Q1</label>
+            <label class="pill"><input type="radio" name="sjr" value="Q2">Q2</label>
+            <label class="pill"><input type="radio" name="sjr" value="Q3">Q3</label>
+            <label class="pill"><input type="radio" name="sjr" value="Q4">Q4</label>
+            <label class="pill"><input type="radio" name="sjr" value="Không xếp loại">Không xếp loại</label>
+          </div>
+          <details class="howto">
+            <summary>Cách tra cứu xếp loại</summary>
+            <ol>
+              <li>Mở <a href="https://www.scimagojr.com/" target="_blank" rel="noopener">scimagojr.com</a>.</li>
+              <li>Nhập tên tạp chí hoặc ISSN vào ô tìm kiếm, nhấn Enter.</li>
+              <li>Chọn đúng tạp chí, xem xếp loại (Q1–Q4) của năm gần nhất.</li>
+            </ol>
+          </details>
+        </div>
+        <div class="field narrow">
+          <label for="impact">Impact Factor <span class="muted">(nếu có)</span></label>
+          <input type="text" id="impact" name="impact" inputmode="decimal" placeholder="VD: 4.6">
+        </div>
+      </div>
+
+      <div id="blockTrongNuoc" class="sub-block hidden">
+        <div class="field">
+          <span class="label">Tạp chí có trong danh mục của Hội đồng Giáo sư ngành Y học không? <span class="req">*</span></span>
+          <div class="pills">
+            <label class="pill yes"><input type="radio" name="hdgs" value="Có">Có</label>
+            <label class="pill no"><input type="radio" name="hdgs" value="Không">Không</label>
+            <label class="pill"><input type="radio" name="hdgs" value="Không rõ">Không rõ</label>
+          </div>
+        </div>
+        <div class="field narrow">
+          <label for="diemHdgs">Điểm tạp chí theo danh mục <span class="muted">(nếu biết)</span></label>
+          <input type="text" id="diemHdgs" name="diemHdgs" inputmode="decimal" placeholder="VD: 0.75">
+        </div>
+      </div>
+    </section>
+
+    <!-- 5. MINH CHỨNG -->
+    <section class="card">
+      <h2 class="card-title"><span class="step">5</span>Minh chứng &amp; xác nhận</h2>
+      <div class="field">
+        <label for="file">File bài báo hoặc ảnh trang đầu <span class="muted">(PDF/ảnh, tối đa <span id="maxMb">10</span> MB)</span></label>
+        <input type="file" id="file" name="file" accept="application/pdf,image/png,image/jpeg,image/webp">
+      </div>
+      <div class="field">
+        <label for="ghiChu">Ghi chú</label>
+        <textarea id="ghiChu" name="ghiChu" rows="3"></textarea>
+      </div>
+      <label class="check">
+        <input type="checkbox" id="camKet" name="camKet" required>
+        <span>Tôi xác nhận các thông tin trên là chính xác và chịu trách nhiệm về nội dung đã khai.</span>
+      </label>
+    </section>
+
+    <div class="error-box hidden" id="errorBox" role="alert"></div>
+
+    <div class="submit-row">
+      <button type="submit" class="btn-primary" id="btnSubmit">Nộp hồ sơ</button>
+    </div>
+  </form>
+
+  <section class="card success-card hidden" id="successCard">
+    <div class="success-icon">✓</div>
+    <h2>Đã ghi nhận hồ sơ</h2>
+    <p>Mã hồ sơ của bạn: <b id="successId"></b></p>
+    <p class="muted" id="successDup"></p>
+    <p class="muted">Vui lòng lưu lại mã hồ sơ để tra cứu khi cần.</p>
+    <button type="button" class="btn-primary" id="btnAgain">Nộp bài báo khác</button>
+  </section>
+
+  <footer class="footer" id="footer"></footer>
+</div>
+
+<script src="assets/config.js"></script>
+<script src="assets/app.js"></script>
+</body>
+</html>
