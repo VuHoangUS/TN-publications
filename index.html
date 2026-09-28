@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Nộp công bố khoa học</title>
   <meta name="description" content="Form thu thập thông tin công bố khoa học của nhân viên bệnh viện – phục vụ thống kê nội bộ và xét thưởng.">
+  <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png">
+  <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -14,8 +16,13 @@
 <div class="wrap">
 
   <header class="hero">
-    <div class="hero-kicker" id="heroUnit">Công bố khoa học</div>
-    <h1 class="hero-title" id="heroTitle">CUNG CẤP THÔNG TIN CÔNG BỐ KHOA HỌC</h1>
+    <div class="hero-head">
+      <div class="hero-logo"><img src="assets/logo-ariha.png" alt="Logo Viện ARiHA" width="72" height="72"></div>
+      <div>
+        <div class="hero-kicker" id="heroUnit">Công bố khoa học</div>
+        <h1 class="hero-title" id="heroTitle">CUNG CẤP THÔNG TIN CÔNG BỐ KHOA HỌC</h1>
+      </div>
+    </div>
     <div class="hero-meta" id="heroMeta"></div>
   </header>
 
@@ -111,7 +118,13 @@
       <div class="grid-4">
         <div class="field">
           <label for="ngayXB">Ngày xuất bản <span class="req" id="ngayReq">*</span></label>
-          <input type="date" id="ngayXB" name="ngayXB">
+          <div class="date-wrap">
+            <input type="text" id="ngayXB" name="ngayXB" inputmode="numeric" placeholder="dd/mm/yyyy" maxlength="10" autocomplete="off">
+            <button type="button" class="date-btn" id="btnDatePick" aria-label="Chọn ngày trên lịch" title="Chọn trên lịch">
+              <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M7 2h2v2h6V2h2v2h3a1 1 0 0 1 1 1v15a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1h3V2Zm12 8H5v9h14v-9ZM5 8h14V6H5v2Z"/></svg>
+            </button>
+            <input type="date" id="ngayXBPicker" class="date-native" tabindex="-1" aria-hidden="true">
+          </div>
         </div>
         <div class="field">
           <label for="tap">Tập (Volume)</label>
@@ -250,8 +263,20 @@
     <section class="card">
       <h2 class="card-title"><span class="step">5</span>Minh chứng &amp; xác nhận</h2>
       <div class="field">
-        <label for="file">File bài báo hoặc ảnh trang đầu <span class="muted">(PDF/ảnh, tối đa <span id="maxMb">10</span> MB)</span></label>
-        <input type="file" id="file" name="file" accept="application/pdf,image/png,image/jpeg,image/webp">
+        <span class="label">File bài báo hoặc ảnh trang đầu <span class="muted">(không bắt buộc)</span></span>
+        <label class="dropzone" id="dropzone" for="file">
+          <input type="file" id="file" name="file" accept="application/pdf,image/png,image/jpeg,image/webp">
+          <svg class="dz-icon" viewBox="0 0 24 24" width="44" height="44" aria-hidden="true"><path fill="currentColor" d="M19.35 10.04A7.49 7.49 0 0 0 12 4C9.11 4 6.6 5.64 5.35 8.04A5.994 5.994 0 0 0 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96ZM14 13v4h-4v-4H7l5-5 5 5h-3Z"/></svg>
+          <span class="dz-title">Kéo thả file vào đây, hoặc <span class="dz-link">chọn file từ thiết bị</span></span>
+          <span class="dz-sub">Hỗ trợ PDF, JPG, PNG, WEBP · Tối đa <span id="maxMb">10</span> MB</span>
+        </label>
+        <div class="file-chip hidden" id="fileChip">
+          <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path fill="currentColor" d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6Zm0 7V3.5L18.5 9H14Z"/></svg>
+          <span class="file-name" id="fileName"></span>
+          <span class="file-size" id="fileSize"></span>
+          <button type="button" class="btn-x" id="btnRemoveFile" aria-label="Bỏ file">×</button>
+        </div>
+        <p class="notice error hidden" id="fileNotice" role="alert"></p>
       </div>
       <div class="field">
         <label for="ghiChu">Ghi chú</label>

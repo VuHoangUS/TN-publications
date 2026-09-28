@@ -1,8 +1,9 @@
 (function () {
   'use strict';
 
-  var FRONTEND_VERSION = '2026-09-28.1';
-  var API_URL = (window.APP_CONFIG && window.APP_CONFIG.API_URL) || '';
+  var FRONTEND_VERSION = '2026-09-28.2';
+  var APP_CONFIG = window.APP_CONFIG || {};
+  var API_URL = APP_CONFIG.API_URL || '';
   var STAFF_ROLES = ['Đồng tác giả', 'Tác giả đứng đầu', 'Tác giả liên hệ', 'Tác giả đứng đầu & liên hệ'];
   var PROFILE_KEY = 'congbo.profile';
   var PROFILE_FIELDS = ['email', 'hoTen', 'khoaNguoiNop', 'sdt'];
@@ -89,6 +90,7 @@
         (left !== null && left >= 0 ? ' (còn ' + left + ' ngày)' : '') + '</span>');
     }
     if (cfg.fromDate) chips.push('<span class="chip">Thống kê bài từ <b>' + esc(cfg.fromDate) + '</b> đến nay</span>');
+    if (APP_CONFIG.TRACKING_LINK) cfg.trackingLink = APP_CONFIG.TRACKING_LINK;
     if (cfg.trackingLink) chips.push('<span class="chip"><a href="' + esc(cfg.trackingLink) + '" target="_blank" rel="noopener">Xem thống kê đã nộp ↗</a></span>');
     $('heroMeta').innerHTML = chips.join('');
 
@@ -127,7 +129,90 @@
     form.addEventListener('change', onFieldEdit);
     form.addEventListener('submit', onSubmit);
     $('btnAgain').addEventListener('click', resetForAnother);
+    setupDateInput();
+    setupDropzone();
     syncDateRequired();
+  }
+
+  /* ---------------- Ngày xuất bản dd/mm/yyyy ---------------- */
+
+  // "dd/mm/yyyy" -> {y,m,d} nếu là ngày có thật, ngược lại null
+  function parseDmy(s) {
+    var m = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(String(s || '').trim());
+    if (!m) return null;
+    var d = +m[1], mo = +m[2], y = +m[3];
+    var dt = new Date(y, mo - 1, d);
+    if (dt.getFullYear() !== y || dt.getMonth() !== mo - 1 || dt.getDate() !== d) return null;
+    return { y: y, m: mo, d: d, date: dt };
+  }
+  function dmyToIso(s) { var p = parseDmy(s); return p ? p.y + '-' + pad(p.m) + '-' + pad(p.d) : ''; }
+
+  function setupDateInput() {
+    var txt = $('ngayXB'), nat = $('ngayXBPicker');
+    // tự chèn dấu "/" khi gõ: 21102025 -> 21/10/2025
+    txt.addEventListener('input', function (e) {
+      if (e.inputType && e.inputType.indexOf('delete') === 0) return;
+      var digits = txt.value.replace(/\D/g, '').slice(0, 8);
+      var out = digits.slice(0, 2);
+      if (digits.length > 2) out += '/' + digits.slice(2, 4);
+      if (digits.length > 4) out += '/' + digits.slice(4);
+      if (digits.length === 2 || digits.length === 4) out += '/';
+      txt.value = out;
+    });
+    $('btnDatePick').addEventListener('click', function () {
+      nat.value = dmyToIso(txt.value);
+      if (typeof nat.showPicker === 'function') { try { nat.showPicker(); return; } catch (e) { /* bỏ qua */ } }
+      nat.style.pointerEvents = 'auto'; nat.focus(); nat.click(); nat.style.pointerEvents = '';
+    });
+    nat.addEventListener('change', function () {
+      var p = nat.value.split('-');
+      if (p.length === 3) { txt.value = p[2] + '/' + p[1] + '/' + p[0]; clearError(txt); txt.dispatchEvent(new Event('change', { bubbles: true })); }
+    });
+  }
+
+  /* ---------------- Ô tải minh chứng (kéo thả) ---------------- */
+
+  function formatSize(b) { return b >= 1048576 ? (b / 1048576).toFixed(1) + ' MB' : Math.max(1, Math.round(b / 1024)) + ' KB'; }
+
+  function renderFileChip() {
+    var f = $('file').files[0];
+    $('fileChip').classList.toggle('hidden', !f);
+    $('dropzone').classList.toggle('hidden', !!f);
+    if (f) { $('fileName').textContent = f.name; $('fileSize').textContent = formatSize(f.size); }
+  }
+
+  function clearFile() {
+    $('file').value = '';
+    $('fileNotice').classList.add('hidden');
+    renderFileChip();
+  }
+
+  function setupDropzone() {
+    var dz = $('dropzone'), input = $('file');
+    input.addEventListener('change', function () {
+      var f = input.files[0], max = (cfg.maxFileMB || 10) * 1048576, msg = '';
+      if (f && f.size > max) msg = 'File "' + f.name + '" nặng ' + formatSize(f.size) + ', vượt quá giới hạn ' + (cfg.maxFileMB || 10) + ' MB. Vui lòng chọn file nhỏ hơn.';
+      else if (f && !/^(application\/pdf|image\/(png|jpeg|webp))$/.test(f.type)) msg = 'Chỉ nhận file PDF hoặc ảnh (JPG, PNG, WEBP).';
+      if (msg) input.value = '';
+      $('fileNotice').textContent = msg;
+      $('fileNotice').classList.toggle('hidden', !msg);
+      renderFileChip();
+      clearError(dz);
+    });
+    ['dragenter', 'dragover'].forEach(function (ev) {
+      dz.addEventListener(ev, function (e) { e.preventDefault(); dz.classList.add('dragover'); });
+    });
+    ['dragleave', 'dragend', 'drop'].forEach(function (ev) {
+      dz.addEventListener(ev, function () { dz.classList.remove('dragover'); });
+    });
+    dz.addEventListener('drop', function (e) {
+      e.preventDefault();
+      if (e.dataTransfer && e.dataTransfer.files.length) {
+        input.files = e.dataTransfer.files;
+        input.dispatchEvent(new Event('change', { bubbles: true }));
+      }
+    });
+    $('btnRemoveFile').addEventListener('click', clearFile);
   }
 
   /* ---------------- per-viewer profile (localStorage) ---------------- */
@@ -251,7 +336,7 @@
         setIf('trang', m.page);
         var dp = ((m['published-print'] || m['published-online'] || m.published || m.issued || {})['date-parts'] || [])[0] || [];
         var dateNote = '';
-        if (dp.length === 3) setIf('ngayXB', dp[0] + '-' + pad(dp[1]) + '-' + pad(dp[2]));
+        if (dp.length === 3) setIf('ngayXB', pad(dp[2]) + '/' + pad(dp[1]) + '/' + dp[0]);
         else if (dp.length) dateNote = ' Nguồn chỉ có ' + (dp.length === 2 ? 'tháng/năm ' + dp[1] + '/' + dp[0] : 'năm ' + dp[0]) + ', vui lòng nhập ngày xuất bản cụ thể.';
         var authors = (m.author || []).map(function (a) {
           return a.name || [a.given, a.family].filter(Boolean).join(' ');
@@ -314,10 +399,11 @@
     need('loaiBai', 'Loại bài');
     need('tinhTrang', 'Tình trạng xuất bản');
     if ($('tinhTrang').value !== 'Đã được chấp nhận') need('ngayXB', 'Ngày xuất bản');
-    if ($('ngayXB').value && cfg.fromDate) {
+    if ($('ngayXB').value.trim()) {
+      var pd = parseDmy($('ngayXB').value);
       var from = parseVnDate(cfg.fromDate);
-      var p = $('ngayXB').value.split('-');
-      if (from && new Date(+p[0], +p[1] - 1, +p[2]) < from) bad($('ngayXB'), 'Ngày xuất bản trước ' + cfg.fromDate + ' (ngoài đợt thống kê)');
+      if (!pd) bad($('ngayXB'), 'Ngày xuất bản không hợp lệ (định dạng dd/mm/yyyy)');
+      else if (from && pd.date < from) bad($('ngayXB'), 'Ngày xuất bản trước ' + cfg.fromDate + ' (ngoài đợt thống kê)');
     }
 
     need('dsTacGia', 'Danh sách tác giả');
@@ -341,8 +427,8 @@
     if (radioVal('phamVi') === 'Trong nước') needRadio('hdgs', 'Tạp chí có trong danh mục HĐGSNN không');
 
     var f = $('file').files[0];
-    if (f && f.size > (cfg.maxFileMB || 10) * 1048576) bad($('file'), 'File minh chứng vượt quá ' + (cfg.maxFileMB || 10) + ' MB');
-    if (f && !/^(application\/pdf|image\/(png|jpeg|webp))$/.test(f.type)) bad($('file'), 'File minh chứng chỉ nhận PDF hoặc ảnh');
+    if (f && f.size > (cfg.maxFileMB || 10) * 1048576) bad($('fileChip'), 'File minh chứng ' + formatSize(f.size) + ' vượt quá giới hạn ' + (cfg.maxFileMB || 10) + ' MB');
+    if (f && !/^(application\/pdf|image\/(png|jpeg|webp))$/.test(f.type)) bad($('fileChip'), 'File minh chứng chỉ nhận PDF hoặc ảnh (JPG, PNG, WEBP)');
     if (!$('camKet').checked) bad($('camKet'), 'Xác nhận cam kết thông tin chính xác');
 
     return { errors: errors, firstBad: firstBad };
@@ -376,7 +462,7 @@
       email: v('email'), hoTen: v('hoTen'), khoaNguoiNop: v('khoaNguoiNop'), sdt: v('sdt'),
       vaiTro: radioVal('vaiTro'),
       doi: normalizeDoi(v('doi')), link: v('link'), tenBai: v('tenBai'), loaiBai: v('loaiBai'),
-      tinhTrang: v('tinhTrang'), ngayXB: v('ngayXB'), tap: v('tap'), so: v('so'), trang: v('trang'),
+      tinhTrang: v('tinhTrang'), ngayXB: dmyToIso(v('ngayXB')), tap: v('tap'), so: v('so'), trang: v('trang'),
       dsTacGia: authorLines().join('\n'), tgDauTien: v('tgDauTien'), tgLienHe: v('tgLienHe'),
       tacGiaBV: staffData(), affiliation: radioVal('affiliation'), hopTac: radioVal('hopTac'),
       phamVi: radioVal('phamVi'), tapChi: v('tapChi'), issn: v('issn'),
@@ -441,6 +527,7 @@
   function resetForAnother() {
     form.reset();
     loadProfile();
+    clearFile();
     $('staffList').innerHTML = '';
     addStaffRow();
     refreshAuthorList();
