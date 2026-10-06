@@ -8,7 +8,7 @@
  * Triển khai: xem README.md trong repo.
  */
 
-var CODE_VERSION = '2026-09-28.1';
+var CODE_VERSION = '2026-10-06.1';
 
 var SPREADSHEET_ID = '1zZkQ3pSskgvwyU8NWw0HOVQ6pZDIB5UtHHEUB7UUr1U';
 var SHEET_CONG_BO = 'CongBo';
@@ -186,7 +186,8 @@ function validate_(p, khoaList) {
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(d.email)) throw new Error('Email không hợp lệ.');
   d.hoTen = required_(str_(p.hoTen, 150), 'Họ tên người nộp');
   d.khoaNguoiNop = oneOf_(p.khoaNguoiNop, khoaList, 'Khoa/Phòng người nộp');
-  d.sdt = str_(p.sdt, 30);
+  // SĐT: chỉ giữ số, dấu +, khoảng trắng, (), -, . (ô được ghi dạng văn bản nên "+84..." an toàn)
+  d.sdt = String(p.sdt || '').replace(/[^\d+\s().-]/g, '').trim().slice(0, 30);
   d.vaiTro = oneOf_(p.vaiTro, VAI_TRO_NGUOI_NOP, 'Vai trò người nộp');
 
   d.doi = normalizeDoi_(p.doi);
@@ -314,14 +315,18 @@ function handleSubmit_(p) {
     var tg = ss.getSheetByName(SHEET_TAC_GIA);
     var tgStart = tg.getLastRow() + 1;
     var statusCol = columnLetter_(HEADERS.indexOf('Trạng thái duyệt') + 1);
-    var tgRows = d.tacGiaBV.map(function (a, i) {
-      return [maHoSo, '', d.doi, d.tenBai, a.ten, a.khoa, a.vaiTro, d.phamVi, d.sjr, d.hdgs,
-        '=IFERROR(INDEX(' + SHEET_CONG_BO + '!' + statusCol + ':' + statusCol + ', MATCH(A' + (tgStart + i) +
+    var tgRows = d.tacGiaBV.map(function (a) {
+      return [maHoSo, '', d.doi, d.tenBai, a.ten, a.khoa, a.vaiTro, d.phamVi, d.sjr, d.hdgs];
+    });
+    // Công thức ghi riêng bằng setFormulas(): luôn dùng cú pháp en-US (dấu phẩy), không phụ thuộc
+    // ngôn ngữ của Sheet. Ghi qua setValues() sẽ bị hiểu theo locale vi_VN (dấu chấm phẩy) -> #ERROR!
+    var tgFormulas = d.tacGiaBV.map(function (a, i) {
+      return ['=IFERROR(INDEX(' + SHEET_CONG_BO + '!' + statusCol + ':' + statusCol + ', MATCH(A' + (tgStart + i) +
         ', ' + SHEET_CONG_BO + '!A:A, 0)), "")'];
     });
-    var tgRange = tg.getRange(tgStart, 1, tgRows.length, TAC_GIA_HEADERS.length);
-    tg.getRange(tgStart, 1, tgRows.length, TAC_GIA_HEADERS.length - 1).setNumberFormat('@');
-    tgRange.setValues(tgRows);
+    var nCols = TAC_GIA_HEADERS.length - 1;
+    tg.getRange(tgStart, 1, tgRows.length, nCols).setNumberFormat('@').setValues(tgRows);
+    tg.getRange(tgStart, nCols + 1, tgRows.length, 1).setNumberFormat('General').setFormulas(tgFormulas);
     tg.getRange(tgStart, 2, tgRows.length, 1).setNumberFormat('dd/MM/yyyy HH:mm:ss')
       .setValues(tgRows.map(function () { return [now]; }));
 
