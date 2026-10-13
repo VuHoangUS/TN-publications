@@ -75,16 +75,17 @@
     <section class="card">
       <h2 class="card-title"><span class="step">2</span>Thông tin bài báo</h2>
       <div class="field">
-        <label for="doi">DOI <span class="req">*</span></label>
+        <label for="doi">DOI <span class="req" id="doiReq">*</span></label>
         <div class="input-btn">
           <input type="text" id="doi" name="doi" placeholder="10.1038/s41598-022-22546-w hoặc https://doi.org/...">
           <button type="button" class="btn-ghost" id="btnDoi">Tự điền từ DOI</button>
         </div>
         <p class="hint">Nhập DOI rồi bấm <b>Tự điền từ DOI</b>: tên bài, tạp chí, ISSN, ngày xuất bản và danh sách tác giả sẽ được điền sẵn. Hãy kiểm tra lại trước khi nộp.</p>
         <div class="notice hidden" id="doiNotice"></div>
+        <div class="notice info hidden" id="acceptedNotice">Bài <b>đã được chấp nhận</b> nhưng chưa có DOI/link: có thể để trống 2 ô này, nhưng cần <b>tải thư chấp nhận</b> của tạp chí ở mục 5.</div>
       </div>
       <div class="field">
-        <label for="link">Link bài báo <span class="muted">(bắt buộc nếu bài chưa có DOI)</span></label>
+        <label for="link">Link bài báo <span class="muted">(nếu bài chưa có DOI)</span></label>
         <input type="url" id="link" name="link" placeholder="https://...">
       </div>
       <div class="field">
@@ -263,7 +264,7 @@
     <section class="card">
       <h2 class="card-title"><span class="step">5</span>Minh chứng &amp; xác nhận</h2>
       <div class="field">
-        <span class="label">File bài báo hoặc ảnh trang đầu <span class="muted">(không bắt buộc)</span></span>
+        <span class="label"><span id="fileLabel">File bài báo hoặc ảnh trang đầu</span> <span id="fileReq" class="muted">(không bắt buộc)</span></span>
         <label class="dropzone" id="dropzone" for="file">
           <input type="file" id="file" name="file" accept="application/pdf,image/png,image/jpeg,image/webp">
           <svg class="dz-icon" viewBox="0 0 24 24" width="44" height="44" aria-hidden="true"><path fill="currentColor" d="M19.35 10.04A7.49 7.49 0 0 0 12 4C9.11 4 6.6 5.64 5.35 8.04A5.994 5.994 0 0 0 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96ZM14 13v4h-4v-4H7l5-5 5 5h-3Z"/></svg>

@@ -1,7 +1,7 @@
 (function () {
   'use strict';
 
-  var FRONTEND_VERSION = '2026-09-28.2';
+  var FRONTEND_VERSION = '2026-10-13.1';
   var APP_CONFIG = window.APP_CONFIG || {};
   var API_URL = APP_CONFIG.API_URL || '';
   var STAFF_ROLES = ['Đồng tác giả', 'Tác giả đứng đầu', 'Tác giả liên hệ', 'Tác giả đứng đầu & liên hệ'];
@@ -122,6 +122,8 @@
     $('doi').addEventListener('change', checkDuplicate);
     $('dsTacGia').addEventListener('input', refreshAuthorList);
     $('tinhTrang').addEventListener('change', syncDateRequired);
+    $('doi').addEventListener('input', syncDateRequired);
+    $('link').addEventListener('input', syncDateRequired);
     Array.prototype.forEach.call(form.querySelectorAll('input[name="phamVi"]'), function (el) {
       el.addEventListener('change', syncPhamVi);
     });
@@ -239,9 +241,20 @@
     $('blockTrongNuoc').classList.toggle('hidden', v !== 'Trong nước');
   }
 
+  // Bài "Đã được chấp nhận" thường chưa có DOI/ngày xuất bản: khi đó DOI/link không bắt buộc,
+  // nhưng phải tải thư chấp nhận làm minh chứng.
+  function needsAcceptanceLetter() {
+    return $('tinhTrang').value === 'Đã được chấp nhận' && !normalizeDoi($('doi').value) && !$('link').value.trim();
+  }
+
   function syncDateRequired() {
     var accepted = $('tinhTrang').value === 'Đã được chấp nhận';
+    var letter = needsAcceptanceLetter();
     $('ngayReq').classList.toggle('hidden', accepted);
+    $('doiReq').classList.toggle('hidden', accepted);
+    $('acceptedNotice').classList.toggle('hidden', !accepted);
+    $('fileLabel').textContent = letter ? 'Thư chấp nhận của tạp chí' : 'File bài báo hoặc ảnh trang đầu';
+    $('fileReq').innerHTML = letter ? '<span class="req">*</span> <span class="muted">(bắt buộc vì bài chưa có DOI/link)</span>' : '(không bắt buộc)';
   }
 
   function addStaffRow(data) {
@@ -393,8 +406,10 @@
     needRadio('vaiTro', 'Vai trò của bạn trong bài báo');
 
     var doi = normalizeDoi($('doi').value);
-    if (!doi && !$('link').value.trim()) bad($('doi'), 'DOI (hoặc link bài báo nếu chưa có DOI)');
-    else if (doi && !/^10\.\d{4,9}\/\S+$/.test(doi)) bad($('doi'), 'DOI không đúng định dạng');
+    if (!doi && !$('link').value.trim()) {
+      if ($('tinhTrang').value !== 'Đã được chấp nhận') bad($('doi'), 'DOI (hoặc link bài báo nếu chưa có DOI)');
+      else if (!$('file').files[0]) bad($('dropzone'), 'Thư chấp nhận của tạp chí (vì bài chưa có DOI/link)');
+    } else if (doi && !/^10\.\d{4,9}\/\S+$/.test(doi)) bad($('doi'), 'DOI không đúng định dạng');
     need('tenBai', 'Tên bài báo');
     need('loaiBai', 'Loại bài');
     need('tinhTrang', 'Tình trạng xuất bản');
