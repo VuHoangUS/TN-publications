@@ -8,7 +8,7 @@
  * Triển khai: xem README.md trong repo.
  */
 
-var CODE_VERSION = '2026-10-06.1';
+var CODE_VERSION = '2026-10-13.1';
 
 var SPREADSHEET_ID = '1zZkQ3pSskgvwyU8NWw0HOVQ6pZDIB5UtHHEUB7UUr1U';
 var SHEET_CONG_BO = 'CongBo';
@@ -192,7 +192,12 @@ function validate_(p, khoaList) {
 
   d.doi = normalizeDoi_(p.doi);
   d.link = str_(p.link, 500);
-  if (!d.doi && !d.link) throw new Error('Cần nhập DOI hoặc link bài báo.');
+  d.tinhTrang = oneOf_(p.tinhTrang, TINH_TRANG, 'Tình trạng xuất bản');
+  if (!d.doi && !d.link) {
+    // Bài mới được chấp nhận thường chưa có DOI: cho phép, nhưng bắt buộc có thư chấp nhận.
+    if (d.tinhTrang !== 'Đã được chấp nhận') throw new Error('Cần nhập DOI hoặc link bài báo.');
+    if (!(p.file && p.file.data)) throw new Error('Bài đã được chấp nhận nhưng chưa có DOI/link: vui lòng tải thư chấp nhận của tạp chí.');
+  }
   if (d.doi && !/^10\.\d{4,9}\/\S+$/.test(d.doi)) throw new Error('DOI không đúng định dạng (bắt đầu bằng 10.xxxx/...).');
   d.tenBai = required_(str_(p.tenBai, 1000), 'Tên bài báo');
   d.loaiBai = oneOf_(p.loaiBai, LOAI_BAI, 'Loại bài');
